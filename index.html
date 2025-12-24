@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ekam Care – Emergency Help</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #d32f2f;
+    }
+    p {
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Ekam Care</h1>
+  <p id="status">Getting your location…</p>
+
+  <script>
+    /*
+      EDIT SECTION (this is what you control for each user)
+      You can charge for editing this later
+    */
+
+    const userName = "Ramesh Kumar";
+
+    const emergencyContacts = [
+      { name: "family", phone: "918087473770" },
+      { name: "Friend", phone: "919284408322" },
+      { name: "emergency", phone: "919892607239" }
+    ];
+
+    function urlencode(text) {
+      return encodeURIComponent(text);
+    }
+
+    function sendWhatsAppMessage(phone, message) {
+      const waUrl = `https://wa.me/${phone}?text=${urlencode(message)}`;
+      window.open(waUrl, "_blank");
+    }
+
+    function fallbackMessage() {
+      document.getElementById("status").textContent =
+        "Location permission denied. Please share location manually via WhatsApp.";
+    }
+
+    if (!navigator.geolocation) {
+      fallbackMessage();
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude.toFixed(6);
+          const lon = pos.coords.longitude.toFixed(6);
+
+          const mapsLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+
+          const message =
+`🚨 EMERGENCY ALERT – EKAM CARE 🚨
+
+Name: ${userName}
+
+Live Location:
+${mapsLink}
+
+Please contact immediately.`;
+
+          document.getElementById("status").textContent =
+            "Opening WhatsApp to notify emergency contacts…";
+
+          emergencyContacts.forEach(contact => {
+            sendWhatsAppMessage(contact.phone, message);
+          });
+        },
+        (err) => {
+          console.error(err);
+          fallbackMessage();
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }
+  </script>
+
+</body>
+</html>
